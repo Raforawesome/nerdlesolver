@@ -5,7 +5,7 @@ pub fn purge_leading_zeroes(s: &str) -> String {
 		return output;
 	}
 
-	while output.as_bytes()[0] as char == '0' && 
+	while output.as_bytes()[0] as char == '0' && output.len() > 1 &&
 		!(("+-*/").contains(output.as_bytes()[1] as char)) {
 		output = output[0..output.len() - 1].to_string();
 	}
@@ -41,7 +41,8 @@ pub fn equation_solver(s: String) -> bool {
 		Ok(n) => n,
 		Err(e) => return false
 	};
-
+	
+	println!("{equation}");
 	engine_num = match meval::eval_str(equation) {
 		Ok(n) => n as i32,
 		Err(e) => return false
@@ -72,7 +73,7 @@ pub fn char_at(s: &str, n: usize) -> char {
 
 pub fn remove_options(guess: String, results: String, options: Vec<String>) -> Vec<String> {
 	let mut new_options: Vec<String> = Vec::with_capacity(results.len());
-	for _ in 0..(if results.len() > 8 { results.len() } else { 8 }) {
+	for _ in 0..=(if results.len() > 8 { results.len() } else { 8 }) {
 		new_options.push(String::new());
 	}
 	for i in 0..results.len() {
@@ -182,4 +183,34 @@ pub fn calculate_possibility(possibilities: Vec<String>) -> String {
         }
     }
     return "Something went wrong!".to_string();
+}
+
+pub fn final_calculate(eq: &str, clues: &str) -> String {
+    let mut possibilities: Vec<String> = Vec::new();
+    for _ in 1..=9 {
+        possibilities.push(String::new());
+    }
+    
+    possibilities[0] = "123456789".to_string();
+	possibilities[7] = "1234567890".to_string();
+	for i in 1..=6 {
+	   possibilities[i] = "1234567890+-*/=".into();
+	}
+	
+	possibilities[8] = "".to_string(); // no known characters at the start
+	
+	loop {
+	   let guess: String = eq.into();
+	   if (guess == "-1") {
+	       return String::new();	
+	   }
+	   if (guess == "0") {
+	       break String::new();	
+	   }
+				
+	   let result: String = clues.into();
+	
+	   possibilities = remove_options(guess, result, possibilities);
+	   return(calculate_possibility(possibilities));
+	}
 }

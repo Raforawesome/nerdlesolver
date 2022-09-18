@@ -13,6 +13,10 @@ fn main() {
 }
 
 fn app(cx: Scope) -> Element {
+    let mut eq = use_state(&cx, || String::new());
+    let mut clues = use_state(&cx, || String::new());
+    let mut result = use_state(&cx, || String::new());
+    
     cx.render(rsx!(
         style { [include_str!("./css/style.css")] }
         h1 {  // Title
@@ -24,6 +28,9 @@ fn app(cx: Scope) -> Element {
             "Enter your initial guess:"
         }
         input {  // Textbox 1
+            oninput: |txt| {
+                eq.set(txt.value.clone());
+            },
 			style: "margin-top:-10px"
 		}
 		h5 {  // Textbox 2 label
@@ -31,12 +38,18 @@ fn app(cx: Scope) -> Element {
             "Enter all your clues:"
         }
         input {  // Textbox 2
+            oninput: |txt| {
+                clues.set(txt.value.clone());
+            },
 			style: "margin-top:-10px"
 		}
 		button {   // Calculate button
 			style: "margin-top: 10vh",
 			p {
 				style: "text-align:center",
+				onclick: |_| {
+				    result.set(solver::final_calculate(eq.get(), clues.get()));
+				},
 				"Calculate"
 			}
 		}
@@ -53,16 +66,16 @@ fn app(cx: Scope) -> Element {
 		p {
 			class: "stattext",
 			style: "margin-top:-10px",
-			["placeholder output"]
+			[result.get().as_str()]
 		}
-		p {
-			class: "stattext",
-			"max depth/iterations:"
-		}
-		p {
-			class: "stattext",
-			style: "margin-top:-10px",
-			[format!("{}/{}", 5, 6)]
-		}
+		// p {
+		// 	class: "stattext",
+		// 	"max depth/iterations:"
+		// }
+		// p {
+		// 	class: "stattext",
+		// 	style: "margin-top:-10px",
+		// 	[format!("{}/{}", 5, 6)]
+		// }
     ))
 }
